@@ -5,6 +5,7 @@ import { type Prisma, PrismaClient } from "./generated/prisma/client";
 
 const connectionString =
 	process.env.NODE_ENV === "test" ? testDatabase() : liveDatabase();
+const schema = databaseSchema();
 
 function liveDatabase(): string {
 	const url = process.env.DATABASE_URL;
@@ -57,6 +58,17 @@ function databaseName(url: string): string {
 	}
 }
 
+function databaseSchema(): string | undefined {
+	const value = process.env.DATABASE_SCHEMA?.trim();
+	if (!value) return undefined;
+	if (!/^[a-z_][a-z0-9_]*$/.test(value)) {
+		throw new Error(
+			"DATABASE_SCHEMA must be a lowercase PostgreSQL identifier (letters, numbers, underscores).",
+		);
+	}
+	return value;
+}
+
 export interface PrismaLogRecord {
 	level: Prisma.LogLevel;
 	message: string;
@@ -100,7 +112,10 @@ const logDefinitions: Prisma.LogDefinition[] = [
 
 const createPrismaClient = () => {
 	const client = new PrismaClient({
-		adapter: new PrismaPg({ connectionString }),
+		adapter: new PrismaPg({
+			connectionString,
+			...(schema ? { options: `-c search_path=${schema}` } : {}),
+		}),
 		log: logDefinitions,
 	});
 
