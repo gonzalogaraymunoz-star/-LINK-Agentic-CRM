@@ -17,3 +17,5 @@ Before changing the domain model, the fork must pass the upstream CI unchanged:
 - automated tests
 
 Only after the baseline is green will LINK-specific entities such as Workspace, Project and Mission be introduced.
+
+CI trigger marker: Actions enabled on the fork on 2026-09-16.
