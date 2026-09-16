@@ -111,11 +111,11 @@ const logDefinitions: Prisma.LogDefinition[] = [
 ];
 
 const createPrismaClient = () => {
+	const adapter = schema
+		? new PrismaPg({ connectionString }, { schema })
+		: new PrismaPg({ connectionString });
 	const client = new PrismaClient({
-		adapter: new PrismaPg({
-			connectionString,
-			...(schema ? { options: `-c search_path=${schema}` } : {}),
-		}),
+		adapter,
 		log: logDefinitions,
 	});
 
