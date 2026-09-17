@@ -68,7 +68,8 @@ function databaseName(url: string): string {
 
 function databaseSchema(): string | undefined {
 	const value = process.env.DATABASE_SCHEMA?.trim();
-	const resolvedSchema = value || (process.env.VERCEL ? "agentic_crm" : undefined);
+	const resolvedSchema =
+		value || (process.env.VERCEL ? "agentic_crm" : undefined);
 	if (!resolvedSchema) return undefined;
 	if (!/^[a-z_][a-z0-9_]*$/.test(resolvedSchema)) {
 		throw new Error(
