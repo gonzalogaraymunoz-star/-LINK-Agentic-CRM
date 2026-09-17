@@ -77,6 +77,10 @@ local development, not for more than one API instance.
 `AuthService.getProfile` is the reference pattern: read through the cache, write
 with an explicit TTL, invalidate on change.
 
+## Vercel deployment
+
+The production deployment uses the `link-core` branch and the `apps/api` root directory. Supabase credentials are provided by the Vercel integration; `BETTER_AUTH_SECRET` and `ALLOWED_SIGN_IN` must be set in the Vercel Production environment before the API can boot.
+
 ## Notes
 
 - Better Auth stores rate limits in the database (`rateLimit.storage`), so every
