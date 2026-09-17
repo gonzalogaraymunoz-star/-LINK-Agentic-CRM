@@ -8,10 +8,15 @@ const connectionString =
 const schema = databaseSchema();
 
 function liveDatabase(): string {
-	const url =
-		process.env.DATABASE_URL ||
-		process.env.POSTGRES_PRISMA_URL ||
-		process.env.POSTGRES_URL;
+	// On Vercel prefer credentials managed by the official Supabase integration.
+	// Manual DATABASE_URL remains a local/self-hosted fallback only.
+	const url = process.env.VERCEL
+		? process.env.POSTGRES_PRISMA_URL ||
+			process.env.POSTGRES_URL ||
+			process.env.DATABASE_URL
+		: process.env.DATABASE_URL ||
+			process.env.POSTGRES_PRISMA_URL ||
+			process.env.POSTGRES_URL;
 
 	if (!url) {
 		throw new Error(
@@ -63,14 +68,14 @@ function databaseName(url: string): string {
 
 function databaseSchema(): string | undefined {
 	const value = process.env.DATABASE_SCHEMA?.trim();
-	const schema = value || (process.env.VERCEL ? "agentic_crm" : undefined);
-	if (!schema) return undefined;
-	if (!/^[a-z_][a-z0-9_]*$/.test(schema)) {
+	const resolvedSchema = value || (process.env.VERCEL ? "agentic_crm" : undefined);
+	if (!resolvedSchema) return undefined;
+	if (!/^[a-z_][a-z0-9_]*$/.test(resolvedSchema)) {
 		throw new Error(
 			"DATABASE_SCHEMA must be a lowercase PostgreSQL identifier (letters, numbers, underscores).",
 		);
 	}
-	return schema;
+	return resolvedSchema;
 }
 
 export interface PrismaLogRecord {
