@@ -30,7 +30,7 @@ export class EnvironmentVariables {
 	@IsString()
 	@MinLength(1, {
 		message:
-			"DATABASE_URL is required. `docker compose up -d` starts one, or set it to any Postgres connection string.",
+			"DATABASE_URL is required. `docker compose up -d` starts one, or connect Supabase to Vercel so a managed Postgres URL is available.",
 	})
 	DATABASE_URL!: string;
 
@@ -131,7 +131,14 @@ export class EnvironmentVariables {
 export type RawEnvironment = Record<string, string | undefined>;
 
 export function validateEnv(config: RawEnvironment): EnvironmentVariables {
-	const validated = plainToInstance(EnvironmentVariables, config, {
+	const managedDatabaseUrl =
+		config.POSTGRES_PRISMA_URL || config.POSTGRES_URL || config.DATABASE_URL;
+	const normalizedConfig: RawEnvironment = {
+		...config,
+		DATABASE_URL: config.VERCEL ? managedDatabaseUrl : config.DATABASE_URL || managedDatabaseUrl,
+	};
+
+	const validated = plainToInstance(EnvironmentVariables, normalizedConfig, {
 		enableImplicitConversion: true,
 		exposeDefaultValues: true,
 	});
