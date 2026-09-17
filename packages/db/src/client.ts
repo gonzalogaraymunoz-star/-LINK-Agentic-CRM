@@ -27,7 +27,30 @@ function liveDatabase(): string {
 		);
 	}
 
-	return url;
+	return normalizeSupabaseSsl(url);
+}
+
+function normalizeSupabaseSsl(url: string): string {
+	try {
+		const parsed = new URL(url);
+		const isSupabase =
+			parsed.hostname.endsWith(".supabase.co") ||
+			parsed.hostname.endsWith(".pooler.supabase.com") ||
+			parsed.hostname.includes("supabase");
+		if (!isSupabase) return url;
+
+		// pg-connection-string currently treats sslmode=require like verify-full
+		// unless libpq compatibility is enabled. Supabase-managed URLs use
+		// sslmode=require, and enabling libpq compatibility keeps TLS encryption
+		// while avoiding the self-signed-certificate verification failure seen in
+		// Vercel's runtime.
+		if (parsed.searchParams.get("sslmode") === "require") {
+			parsed.searchParams.set("uselibpqcompat", "true");
+		}
+		return parsed.toString();
+	} catch {
+		return url;
+	}
 }
 
 function testDatabase(): string {
