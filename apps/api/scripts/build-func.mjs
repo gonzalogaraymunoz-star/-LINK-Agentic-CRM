@@ -190,11 +190,12 @@ const isProductionDeployment = process.env.VERCEL_ENV === "production";
 
 const directDatabaseUrl = !isProductionDeployment
 	? undefined
-	: process.env.DIRECT_DATABASE_URL ||
-		process.env.POSTGRES_URL_NON_POOLING ||
+	: process.env.POSTGRES_URL_NON_POOLING ||
 		process.env.DATABASE_URL_UNPOOLED ||
-		process.env.DATABASE_URL ||
-		process.env.POSTGRES_PRISMA_URL;
+		process.env.DIRECT_DATABASE_URL ||
+		process.env.POSTGRES_URL ||
+		process.env.POSTGRES_PRISMA_URL ||
+		process.env.DATABASE_URL;
 
 if (!process.env.VERCEL) {
 	console.log("• not a Vercel build — skipping migrations");
@@ -206,7 +207,11 @@ if (!process.env.VERCEL) {
 	console.log("• no database URL at build time — skipping migrations");
 } else {
 	const dbDir = join(repoRoot, "packages/db");
-	const dbEnv = { ...process.env, DATABASE_URL: directDatabaseUrl };
+	const dbEnv = {
+		...process.env,
+		DATABASE_URL: directDatabaseUrl,
+		PRISMA_MIGRATION_URL: directDatabaseUrl,
+	};
 
 	console.log("• applying migrations (prisma migrate deploy)...");
 	execSync(`${bun} x prisma migrate deploy`, {
