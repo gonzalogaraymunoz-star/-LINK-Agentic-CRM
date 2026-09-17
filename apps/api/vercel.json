@@ -1,5 +1,4 @@
 {
 	"$schema": "https://openapi.vercel.sh/vercel.json",
-	"buildCommand": "bun scripts/build-func.mjs",
-	"outputDirectory": ".vercel/output"
+	"buildCommand": "bun scripts/build-func.mjs"
 }
