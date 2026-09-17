@@ -8,11 +8,14 @@ const connectionString =
 const schema = databaseSchema();
 
 function liveDatabase(): string {
-	const url = process.env.DATABASE_URL;
+	const url =
+		process.env.DATABASE_URL ||
+		process.env.POSTGRES_PRISMA_URL ||
+		process.env.POSTGRES_URL;
 
 	if (!url) {
 		throw new Error(
-			"DATABASE_URL is not set. Copy .env.example to .env at the root of the repo and fill it in, or set DATABASE_URL in the environment.",
+			"No database connection is configured. Set DATABASE_URL or connect Supabase to Vercel so POSTGRES_PRISMA_URL is available.",
 		);
 	}
 
@@ -60,13 +63,14 @@ function databaseName(url: string): string {
 
 function databaseSchema(): string | undefined {
 	const value = process.env.DATABASE_SCHEMA?.trim();
-	if (!value) return undefined;
-	if (!/^[a-z_][a-z0-9_]*$/.test(value)) {
+	const schema = value || (process.env.VERCEL ? "agentic_crm" : undefined);
+	if (!schema) return undefined;
+	if (!/^[a-z_][a-z0-9_]*$/.test(schema)) {
 		throw new Error(
 			"DATABASE_SCHEMA must be a lowercase PostgreSQL identifier (letters, numbers, underscores).",
 		);
 	}
-	return value;
+	return schema;
 }
 
 export interface PrismaLogRecord {
