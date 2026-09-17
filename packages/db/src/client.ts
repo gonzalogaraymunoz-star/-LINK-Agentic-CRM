@@ -9,9 +9,12 @@ const schema = databaseSchema();
 
 function liveDatabase(): string {
 	// On Vercel prefer credentials managed by the official Supabase integration.
-	// Manual DATABASE_URL remains a local/self-hosted fallback only.
+	// Use the direct/session URL first: it is the same connection class used by
+	// successful production migrations and avoids pooler-specific runtime issues.
 	const url = process.env.VERCEL
-		? process.env.POSTGRES_PRISMA_URL ||
+		? process.env.POSTGRES_URL_NON_POOLING ||
+			process.env.DATABASE_URL_UNPOOLED ||
+			process.env.POSTGRES_PRISMA_URL ||
 			process.env.POSTGRES_URL ||
 			process.env.DATABASE_URL
 		: process.env.DATABASE_URL ||
@@ -20,7 +23,7 @@ function liveDatabase(): string {
 
 	if (!url) {
 		throw new Error(
-			"No database connection is configured. Set DATABASE_URL or connect Supabase to Vercel so POSTGRES_PRISMA_URL is available.",
+			"No database connection is configured. Set DATABASE_URL or connect Supabase to Vercel so a managed Postgres URL is available.",
 		);
 	}
 
