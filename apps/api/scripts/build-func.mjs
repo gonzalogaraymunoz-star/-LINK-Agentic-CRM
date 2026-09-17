@@ -14,7 +14,11 @@ import { fileURLToPath } from "node:url";
 
 const apiDir = dirname(dirname(fileURLToPath(import.meta.url)));
 const repoRoot = dirname(dirname(apiDir));
-const outDir = join(repoRoot, ".vercel/output");
+// Vercel's Root Directory for this project is apps/api, so Build Output API
+// artifacts must live under apps/api/.vercel/output rather than repo-root
+// .vercel/output. This also lets vercel.json override stale dashboard output
+// settings without requiring a manual project-settings change.
+const outDir = join(apiDir, ".vercel/output");
 const funcDir = join(outDir, "functions/api/index.func");
 const bun = process.env.BUN_BIN || "bun";
 
@@ -189,7 +193,8 @@ const directDatabaseUrl = !isProductionDeployment
 	: process.env.DIRECT_DATABASE_URL ||
 		process.env.POSTGRES_URL_NON_POOLING ||
 		process.env.DATABASE_URL_UNPOOLED ||
-		process.env.DATABASE_URL;
+		process.env.DATABASE_URL ||
+		process.env.POSTGRES_PRISMA_URL;
 
 if (!process.env.VERCEL) {
 	console.log("• not a Vercel build — skipping migrations");
