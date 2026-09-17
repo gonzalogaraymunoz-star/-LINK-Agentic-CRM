@@ -1,17 +1,31 @@
 import "@crm/env/load";
 
 import path from "node:path";
-import { defineConfig, env } from "prisma/config";
+import { defineConfig } from "prisma/config";
 
 function databaseSchema(): string | undefined {
 	const value = process.env.DATABASE_SCHEMA?.trim();
-	if (!value) return undefined;
-	if (!/^[a-z_][a-z0-9_]*$/.test(value)) {
+	const schema = value || (process.env.VERCEL ? "agentic_crm" : undefined);
+	if (!schema) return undefined;
+	if (!/^[a-z_][a-z0-9_]*$/.test(schema)) {
 		throw new Error(
 			"DATABASE_SCHEMA must be a lowercase PostgreSQL identifier (letters, numbers, underscores).",
 		);
 	}
-	return value;
+	return schema;
+}
+
+function databaseUrl(): string {
+	const url =
+		process.env.DATABASE_URL ||
+		process.env.POSTGRES_PRISMA_URL ||
+		process.env.POSTGRES_URL;
+	if (!url) {
+		throw new Error(
+			"No database connection is configured. Set DATABASE_URL or connect Supabase to Vercel so POSTGRES_PRISMA_URL is available.",
+		);
+	}
+	return url;
 }
 
 function prismaDatabaseUrl(url: string): string {
@@ -30,6 +44,6 @@ export default defineConfig({
 		seed: "bun run prisma/seed.ts",
 	},
 	datasource: {
-		url: prismaDatabaseUrl(env("DATABASE_URL")),
+		url: prismaDatabaseUrl(databaseUrl()),
 	},
 });
