@@ -5,17 +5,41 @@ import { type Prisma, PrismaClient } from "./generated/prisma/client";
 
 const connectionString =
 	process.env.NODE_ENV === "test" ? testDatabase() : liveDatabase();
+const schema = databaseSchema();
 
 function liveDatabase(): string {
-	const url = process.env.DATABASE_URL;
+	const url =
+		process.env.DATABASE_URL ||
+		process.env.POSTGRES_PRISMA_URL ||
+		process.env.POSTGRES_URL ||
+		process.env.POSTGRES_URL_NON_POOLING ||
+		process.env.DATABASE_URL_UNPOOLED;
 
 	if (!url) {
 		throw new Error(
-			"DATABASE_URL is not set. Copy .env.example to .env at the root of the repo and fill it in, or set DATABASE_URL in the environment.",
+			"No database connection is configured. Set DATABASE_URL or connect Supabase to Vercel so a managed Postgres URL is available.",
 		);
 	}
 
-	return url;
+	return normalizeSupabaseSsl(url);
+}
+
+function normalizeSupabaseSsl(url: string): string {
+	try {
+		const parsed = new URL(url);
+		const isSupabase =
+			parsed.hostname.endsWith(".supabase.co") ||
+			parsed.hostname.endsWith(".pooler.supabase.com") ||
+			parsed.hostname.includes("supabase");
+		if (!isSupabase) return url;
+
+		if (parsed.searchParams.get("sslmode") === "require") {
+			parsed.searchParams.set("uselibpqcompat", "true");
+		}
+		return parsed.toString();
+	} catch {
+		return url;
+	}
 }
 
 function testDatabase(): string {
@@ -55,6 +79,27 @@ function databaseName(url: string): string {
 	} catch {
 		return url;
 	}
+}
+
+function databaseSchema(): string | undefined {
+	const value = process.env.DATABASE_SCHEMA?.trim();
+	const resolvedSchema =
+		value || (process.env.VERCEL ? "agentic_crm" : undefined);
+	if (!resolvedSchema) return undefined;
+	if (!/^[a-z_][a-z0-9_]*$/.test(resolvedSchema)) {
+		throw new Error(
+			"DATABASE_SCHEMA must be a lowercase PostgreSQL identifier (letters, numbers, underscores).",
+		);
+	}
+	if (
+		process.env.VERCEL_ENV === "preview" &&
+		resolvedSchema === "agentic_crm"
+	) {
+		throw new Error(
+			"Preview deployments are blocked from the production agentic_crm schema. Configure an isolated preview database/schema instead.",
+		);
+	}
+	return resolvedSchema;
 }
 
 export interface PrismaLogRecord {
@@ -99,8 +144,11 @@ const logDefinitions: Prisma.LogDefinition[] = [
 ];
 
 const createPrismaClient = () => {
+	const adapter = schema
+		? new PrismaPg({ connectionString }, { schema })
+		: new PrismaPg({ connectionString });
 	const client = new PrismaClient({
-		adapter: new PrismaPg({ connectionString }),
+		adapter,
 		log: logDefinitions,
 	});
 

@@ -14,7 +14,7 @@ import { fileURLToPath } from "node:url";
 
 const apiDir = dirname(dirname(fileURLToPath(import.meta.url)));
 const repoRoot = dirname(dirname(apiDir));
-const outDir = join(repoRoot, ".vercel/output");
+const outDir = join(apiDir, ".vercel/output");
 const funcDir = join(outDir, "functions/api/index.func");
 const bun = process.env.BUN_BIN || "bun";
 
@@ -46,7 +46,7 @@ mkdirSync(funcDir, { recursive: true });
 console.log("• bundling function with bun build...");
 execSync(
 	[
-		`${bun} build api/index.ts`,
+		`${bun} build vercel-entry.ts`,
 		"--target=node",
 		"--format=esm",
 		`--outfile=${JSON.stringify(join(funcDir, "index.mjs"))}`,
@@ -177,7 +177,6 @@ writeFileSync(
 	JSON.stringify({
 		version: 3,
 		routes: [{ src: "/(.*)", dest: "/api/index" }],
-		crons: [{ path: "/internal/sync/google", schedule: "*/5 * * * *" }],
 	}),
 );
 
@@ -190,6 +189,8 @@ const directDatabaseUrl = !isProductionDeployment
 	: process.env.DIRECT_DATABASE_URL ||
 		process.env.POSTGRES_URL_NON_POOLING ||
 		process.env.DATABASE_URL_UNPOOLED ||
+		process.env.POSTGRES_URL ||
+		process.env.POSTGRES_PRISMA_URL ||
 		process.env.DATABASE_URL;
 
 if (!process.env.VERCEL) {
@@ -202,7 +203,11 @@ if (!process.env.VERCEL) {
 	console.log("• no database URL at build time — skipping migrations");
 } else {
 	const dbDir = join(repoRoot, "packages/db");
-	const dbEnv = { ...process.env, DATABASE_URL: directDatabaseUrl };
+	const dbEnv = {
+		...process.env,
+		DATABASE_URL: directDatabaseUrl,
+		PRISMA_MIGRATION_URL: directDatabaseUrl,
+	};
 
 	console.log("• applying migrations (prisma migrate deploy)...");
 	execSync(`${bun} x prisma migrate deploy`, {

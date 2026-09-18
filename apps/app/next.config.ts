@@ -3,20 +3,25 @@ import type { NextConfig } from "next";
 
 loadRootEnv();
 
+const LOCAL_API_URL = "http://localhost:3001";
+const LINK_PRODUCTION_API_URL = "https://link-agentic-crm-api.vercel.app";
+const LINK_PRODUCTION_APP_URL = "https://link-agentic-crm.vercel.app";
+
 const apiUrl =
 	process.env.API_URL ??
 	process.env.NEXT_PUBLIC_API_URL ??
-	"http://localhost:3001";
+	(process.env.VERCEL ? LINK_PRODUCTION_API_URL : LOCAL_API_URL);
 
-const allowedDevOrigins = (process.env.APP_URL ?? "")
-	.split(",")
-	.flatMap((origin) => {
-		try {
-			return [new URL(origin.trim()).hostname];
-		} catch {
-			return [];
-		}
-	});
+const appUrl =
+	process.env.APP_URL ?? (process.env.VERCEL ? LINK_PRODUCTION_APP_URL : "");
+
+const allowedDevOrigins = appUrl.split(",").flatMap((origin) => {
+	try {
+		return [new URL(origin.trim()).hostname];
+	} catch {
+		return [];
+	}
+});
 
 const nextConfig: NextConfig = {
 	allowedDevOrigins,

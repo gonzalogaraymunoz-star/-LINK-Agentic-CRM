@@ -2,6 +2,8 @@ import "@crm/env/load";
 
 const DEFAULT_API_URL = "http://localhost:3001";
 const DEFAULT_APP_URL = "http://localhost:3000";
+const LINK_PRODUCTION_API_URL = "https://link-agentic-crm-api.vercel.app";
+const LINK_PRODUCTION_APP_URL = "https://link-agentic-crm.vercel.app";
 const DEFAULT_MICROSOFT_TENANT = "common";
 
 const optional = (key: string): string | undefined => {
@@ -46,15 +48,22 @@ const slackCredentials = ():
 	| { clientId: string; clientSecret: string }
 	| undefined => pair("SLACK_CLIENT_ID", "SLACK_CLIENT_SECRET");
 
-const apiUrl =
-	optional("API_URL") ?? optional("BETTER_AUTH_URL") ?? DEFAULT_API_URL;
+const productionApiUrl = process.env.VERCEL
+	? LINK_PRODUCTION_API_URL
+	: DEFAULT_API_URL;
+const productionAppUrl = process.env.VERCEL
+	? LINK_PRODUCTION_APP_URL
+	: DEFAULT_APP_URL;
 
-const appUrls = (optional("APP_URL") ?? DEFAULT_APP_URL)
+const apiUrl =
+	optional("API_URL") ?? optional("BETTER_AUTH_URL") ?? productionApiUrl;
+
+const appUrls = (optional("APP_URL") ?? productionAppUrl)
 	.split(",")
 	.map((origin) => origin.trim())
 	.filter(Boolean);
 
-const appUrl = appUrls[0] ?? DEFAULT_APP_URL;
+const appUrl = appUrls[0] ?? productionAppUrl;
 
 export const env = {
 	apiUrl,
