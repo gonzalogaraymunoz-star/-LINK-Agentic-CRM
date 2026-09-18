@@ -5,6 +5,7 @@ import { Suspense } from "react";
 import { AuthHeading, AuthShell } from "@/components/auth-shell";
 import { getSession } from "@/lib/session";
 import { getServerQueryClient, getServerTrpc } from "@/lib/trpc/server";
+import { EmailSignIn } from "./email-sign-in";
 import { SocialSignIn } from "./social-sign-in";
 import { type SsoProvider, SsoSignIn } from "./sso-sign-in";
 
@@ -85,30 +86,14 @@ async function SignIn({
 				? configured
 				: [];
 
-	if (!showSso && social.length === 0) {
-		return (
-			<>
-				<AuthHeading
-					title="No way in yet"
-					description="This CRM has no sign-in method configured, so nobody can get in — including you."
-				/>
-
-				<p className="text-center text-muted-foreground text-sm/5">
-					Set GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET — or MICROSOFT_CLIENT_ID
-					and MICROSOFT_CLIENT_SECRET — in the root .env file and restart. Your
-					own identity provider can be added from Settings once somebody is
-					signed in.
-				</p>
-			</>
-		);
-	}
-
 	return (
 		<>
 			<AuthHeading
-				title="Welcome back"
-				description="Sign in with your account to continue."
+				title="Welcome to LINK"
+				description="Use your approved email to enter the operational CRM."
 			/>
+
+			<EmailSignIn />
 
 			{showSso ? <SsoSignIn providers={providers} /> : null}
 			{social.map((provider) => (
