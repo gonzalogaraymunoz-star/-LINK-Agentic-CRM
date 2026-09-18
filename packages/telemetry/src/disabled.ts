@@ -7,6 +7,9 @@ export function telemetryDisabled(
 ): boolean {
 	if (env.NODE_ENV === "test") return true;
 
+	// LINK's production fork does not send upstream product telemetry.
+	if (env.VERCEL) return true;
+
 	return DISABLE_VARIABLES.some((name) => isTruthy(env[name]));
 }
 
