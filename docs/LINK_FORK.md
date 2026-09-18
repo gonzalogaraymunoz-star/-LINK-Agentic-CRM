@@ -24,7 +24,7 @@ A production candidate must satisfy all of the following:
 - Automated tests pass.
 - API `/health` returns HTTP 200 with a successful database round-trip.
 - The web app reaches the production API rather than localhost.
-- At least one identity provider is configured and sign-in is restricted by `ALLOWED_SIGN_IN`.
+- Sign-in is restricted by `ALLOWED_SIGN_IN`. LINK provides allow-listed email/password access as the production bootstrap; Google/Microsoft/SSO remain optional integrations for mailbox and calendar sync.
 - Production database credentials are not exposed to Preview deployments.
 - CRM operational tables remain isolated in `agentic_crm`.
 
