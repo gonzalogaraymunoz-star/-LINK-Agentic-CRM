@@ -13,18 +13,15 @@ const apiUrl =
 	(process.env.VERCEL ? LINK_PRODUCTION_API_URL : LOCAL_API_URL);
 
 const appUrl =
-	process.env.APP_URL ??
-	(process.env.VERCEL ? LINK_PRODUCTION_APP_URL : "");
+	process.env.APP_URL ?? (process.env.VERCEL ? LINK_PRODUCTION_APP_URL : "");
 
-const allowedDevOrigins = appUrl
-	.split(",")
-	.flatMap((origin) => {
-		try {
-			return [new URL(origin.trim()).hostname];
-		} catch {
-			return [];
-		}
-	});
+const allowedDevOrigins = appUrl.split(",").flatMap((origin) => {
+	try {
+		return [new URL(origin.trim()).hostname];
+	} catch {
+		return [];
+	}
+});
 
 const nextConfig: NextConfig = {
 	allowedDevOrigins,
