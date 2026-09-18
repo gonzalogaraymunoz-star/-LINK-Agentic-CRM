@@ -1,4 +1,5 @@
 {
 	"$schema": "https://openapi.vercel.sh/vercel.json",
-	"buildCommand": "cd ../.. && bun run --filter=app build"
+	"installCommand": "cd ../.. && bun install --frozen-lockfile --ignore-scripts",
+	"buildCommand": "cd ../.. && DATABASE_URL=postgresql://postgres:postgres@localhost:5432/crm?schema=agentic_crm bun run --filter=@crm/db db:generate && bun run --filter=app build"
 }
