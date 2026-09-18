@@ -135,7 +135,7 @@ export function validateEnv(config: RawEnvironment): EnvironmentVariables {
 		config.POSTGRES_PRISMA_URL || config.POSTGRES_URL || config.DATABASE_URL;
 	const normalizedConfig: RawEnvironment = {
 		...config,
-		DATABASE_URL: config.VERCEL ? managedDatabaseUrl : config.DATABASE_URL || managedDatabaseUrl,
+		DATABASE_URL: config.DATABASE_URL || managedDatabaseUrl,
 	};
 
 	const validated = plainToInstance(EnvironmentVariables, normalizedConfig, {
