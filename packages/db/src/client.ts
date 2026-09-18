@@ -8,18 +8,15 @@ const connectionString =
 const schema = databaseSchema();
 
 function liveDatabase(): string {
-	// On Vercel prefer credentials managed by the official Supabase integration.
-	// Use the direct/session URL first: it is the same connection class used by
-	// successful production migrations and avoids pooler-specific runtime issues.
-	const url = process.env.VERCEL
-		? process.env.POSTGRES_URL_NON_POOLING ||
-			process.env.DATABASE_URL_UNPOOLED ||
-			process.env.POSTGRES_PRISMA_URL ||
-			process.env.POSTGRES_URL ||
-			process.env.DATABASE_URL
-		: process.env.DATABASE_URL ||
-			process.env.POSTGRES_PRISMA_URL ||
-			process.env.POSTGRES_URL;
+	// Explicit project configuration wins over automatically injected provider
+	// variables. This prevents a stale Vercel integration from silently routing
+	// LINK Agentic CRM to the wrong Supabase project.
+	const url =
+		process.env.DATABASE_URL ||
+		process.env.POSTGRES_PRISMA_URL ||
+		process.env.POSTGRES_URL ||
+		process.env.POSTGRES_URL_NON_POOLING ||
+		process.env.DATABASE_URL_UNPOOLED;
 
 	if (!url) {
 		throw new Error(
@@ -39,11 +36,6 @@ function normalizeSupabaseSsl(url: string): string {
 			parsed.hostname.includes("supabase");
 		if (!isSupabase) return url;
 
-		// pg-connection-string currently treats sslmode=require like verify-full
-		// unless libpq compatibility is enabled. Supabase-managed URLs use
-		// sslmode=require, and enabling libpq compatibility keeps TLS encryption
-		// while avoiding the self-signed-certificate verification failure seen in
-		// Vercel's runtime.
 		if (parsed.searchParams.get("sslmode") === "require") {
 			parsed.searchParams.set("uselibpqcompat", "true");
 		}
