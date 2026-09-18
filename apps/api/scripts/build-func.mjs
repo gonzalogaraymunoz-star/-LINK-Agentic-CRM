@@ -14,9 +14,6 @@ import { fileURLToPath } from "node:url";
 
 const apiDir = dirname(dirname(fileURLToPath(import.meta.url)));
 const repoRoot = dirname(dirname(apiDir));
-// Vercel's Root Directory for this project is apps/api, so Build Output API
-// artifacts must live under apps/api/.vercel/output rather than repo-root
-// .vercel/output.
 const outDir = join(apiDir, ".vercel/output");
 const funcDir = join(outDir, "functions/api/index.func");
 const bun = process.env.BUN_BIN || "bun";
@@ -189,9 +186,9 @@ const isProductionDeployment = process.env.VERCEL_ENV === "production";
 
 const directDatabaseUrl = !isProductionDeployment
 	? undefined
-	: process.env.POSTGRES_URL_NON_POOLING ||
+	: process.env.DIRECT_DATABASE_URL ||
+		process.env.POSTGRES_URL_NON_POOLING ||
 		process.env.DATABASE_URL_UNPOOLED ||
-		process.env.DIRECT_DATABASE_URL ||
 		process.env.POSTGRES_URL ||
 		process.env.POSTGRES_PRISMA_URL ||
 		process.env.DATABASE_URL;
