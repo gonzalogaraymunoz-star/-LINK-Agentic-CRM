@@ -65,12 +65,7 @@ export function EmailSignIn() {
 					{mode === "sign-up" ? (
 						<Field>
 							<FieldLabel htmlFor={nameId}>Name</FieldLabel>
-							<Input
-								id={nameId}
-								name="name"
-								autoComplete="name"
-								required
-							/>
+							<Input id={nameId} name="name" autoComplete="name" required />
 						</Field>
 					) : null}
 
@@ -112,9 +107,7 @@ export function EmailSignIn() {
 				variant="ghost"
 				disabled={pending}
 				onClick={() =>
-					setMode((current) =>
-						current === "sign-in" ? "sign-up" : "sign-in",
-					)
+					setMode((current) => (current === "sign-in" ? "sign-up" : "sign-in"))
 				}
 			>
 				{mode === "sign-in"
