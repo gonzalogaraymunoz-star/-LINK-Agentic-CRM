@@ -21,10 +21,11 @@ const fontMono = Geist_Mono({
 
 export const metadata: Metadata = {
 	title: {
-		default: "Comp AI - CRM",
-		template: "%s · Comp AI CRM",
+		default: "LINK Agentic CRM",
+		template: "%s · LINK Agentic CRM",
 	},
-	description: "Customer Relationship Management for Comp AI",
+	description:
+		"Operational CRM and agent execution layer for the LINK ecosystem.",
 	icons: {
 		icon: [
 			{ url: "/favicon.svg", type: "image/svg+xml" },
