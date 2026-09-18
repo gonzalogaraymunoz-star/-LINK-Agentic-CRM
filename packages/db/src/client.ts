@@ -8,9 +8,6 @@ const connectionString =
 const schema = databaseSchema();
 
 function liveDatabase(): string {
-	// Explicit project configuration wins over automatically injected provider
-	// variables. This prevents a stale Vercel integration from silently routing
-	// LINK Agentic CRM to the wrong Supabase project.
 	const url =
 		process.env.DATABASE_URL ||
 		process.env.POSTGRES_PRISMA_URL ||
@@ -92,6 +89,14 @@ function databaseSchema(): string | undefined {
 	if (!/^[a-z_][a-z0-9_]*$/.test(resolvedSchema)) {
 		throw new Error(
 			"DATABASE_SCHEMA must be a lowercase PostgreSQL identifier (letters, numbers, underscores).",
+		);
+	}
+	if (
+		process.env.VERCEL_ENV === "preview" &&
+		resolvedSchema === "agentic_crm"
+	) {
+		throw new Error(
+			"Preview deployments are blocked from the production agentic_crm schema. Configure an isolated preview database/schema instead.",
 		);
 	}
 	return resolvedSchema;
