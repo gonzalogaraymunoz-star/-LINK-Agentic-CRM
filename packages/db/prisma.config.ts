@@ -13,6 +13,14 @@ function databaseSchema(): string | undefined {
 			"DATABASE_SCHEMA must be a lowercase PostgreSQL identifier (letters, numbers, underscores).",
 		);
 	}
+	if (
+		process.env.VERCEL_ENV === "preview" &&
+		resolvedSchema === "agentic_crm"
+	) {
+		throw new Error(
+			"Preview deployments are blocked from the production agentic_crm schema. Configure an isolated preview database/schema instead.",
+		);
+	}
 	return resolvedSchema;
 }
 
